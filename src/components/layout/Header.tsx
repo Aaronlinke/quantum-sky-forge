@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User, Network } from "lucide-react";
+import { Menu, X, User, Network, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -30,9 +30,15 @@ const Header = () => {
             Roadmap
           </a>
           {user && (
-            <Link to="/agent-marketplace" className="text-sm font-medium hover:text-primary transition-colors">
-              Agenten
-            </Link>
+            <>
+              <Link to="/agent-marketplace" className="text-sm font-medium hover:text-primary transition-colors">
+                Agenten
+              </Link>
+              <Link to="/knowledge-graph" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                <Share2 className="w-4 h-4" />
+                Wissensgraph
+              </Link>
+            </>
           )}
           {user ? (
             <Link to="/profile">
@@ -92,13 +98,23 @@ const Header = () => {
               Roadmap
             </a>
             {user && (
-              <Link
-                to="/agent-marketplace"
-                className="text-sm font-medium hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Agenten
-              </Link>
+              <>
+                <Link
+                  to="/agent-marketplace"
+                  className="text-sm font-medium hover:text-primary transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Agenten
+                </Link>
+                <Link
+                  to="/knowledge-graph"
+                  className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Share2 className="w-4 h-4" />
+                  Wissensgraph
+                </Link>
+              </>
             )}
             {user ? (
               <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
