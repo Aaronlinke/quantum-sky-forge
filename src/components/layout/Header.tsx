@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User, Network, Share2 } from "lucide-react";
+import { Menu, X, User, Network, Share2, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -37,6 +37,10 @@ const Header = () => {
               <Link to="/knowledge-graph" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
                 <Share2 className="w-4 h-4" />
                 Wissensgraph
+              </Link>
+              <Link to="/black-sultan-os" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                <Brain className="w-4 h-4" />
+                Neural Core
               </Link>
             </>
           )}
@@ -113,6 +117,14 @@ const Header = () => {
                 >
                   <Share2 className="w-4 h-4" />
                   Wissensgraph
+                </Link>
+                <Link
+                  to="/black-sultan-os"
+                  className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Brain className="w-4 h-4" />
+                  Neural Core
                 </Link>
               </>
             )}

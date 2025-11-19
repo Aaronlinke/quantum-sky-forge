@@ -12,6 +12,7 @@ import Consent from '@/pages/Consent';
 import AgentMarketplace from '@/pages/AgentMarketplace';
 import MyAgents from '@/pages/MyAgents';
 import KnowledgeGraph from '@/pages/KnowledgeGraph';
+import BlackSultanOS from '@/pages/BlackSultanOS';
 import { AuthProvider } from '@/hooks/useAuth';
 
 const queryClient = new QueryClient();
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
       {
         path: 'knowledge-graph',
         element: <KnowledgeGraph />,
+      },
+      {
+        path: 'black-sultan-os',
+        element: <BlackSultanOS />,
       },
     ],
   },
