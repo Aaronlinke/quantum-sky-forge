@@ -35,7 +35,25 @@ const BlackSultanOS = () => {
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize Web Worker
+    // Initialize Unified Consciousness System
+    consciousnessRef.current = new UnifiedConsciousness();
+    
+    addLog('SYSTEM', 'Supreme Unified Consciousness System initialized');
+    addLog('SYSTEM', '→ NanoCell System: 10009 cells ready');
+    addLog('SYSTEM', '→ ThoughtBot System: 19 agents online');
+    addLog('SYSTEM', '→ Quantum Layers: 6 layers configured');
+    addLog('SYSTEM', '→ WebRTC Mesh: P2P network standby');
+    addLog('SYSTEM', '→ Event Sourcing: Event log active');
+    
+    // Update stats periodically
+    const statsInterval = setInterval(() => {
+      if (consciousnessRef.current) {
+        const comprehensiveStats = consciousnessRef.current.getComprehensiveStats();
+        setStats(comprehensiveStats);
+      }
+    }, 500);
+    
+    // Initialize Web Worker for neural visualization
     const workerCode = `
       class Neuron {
         constructor(id, layer, index) {
