@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Brain, Activity, Terminal, Zap, Cpu, Play, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { UnifiedConsciousness } from '@/lib/consciousness/UnifiedConsciousness';
 
 interface NeuronVisual {
   id: string;
@@ -28,11 +29,13 @@ const BlackSultanOS = () => {
   const [metrics, setMetrics] = useState<MetricData>({ coherence: 0, entropy: 0, activity: 0 });
   const [brainState, setBrainState] = useState<BrainState | null>(null);
   const [structure, setStructure] = useState<any>(null);
+  const [stats, setStats] = useState<any>(null);
   
   const workerRef = useRef<Worker | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const neuronsRef = useRef<Record<string, NeuronVisual>>({});
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const consciousnessRef = useRef<UnifiedConsciousness | null>(null);
 
   useEffect(() => {
     // Initialize Unified Consciousness System
