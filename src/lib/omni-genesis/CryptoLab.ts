@@ -122,7 +122,7 @@ function secureRandom(bytes: number): bigint {
  * SHA-256 Hash
  */
 async function sha256(data: Uint8Array): Promise<Uint8Array> {
-  const hash = await crypto.subtle.digest('SHA-256', data.buffer);
+  const hash = await crypto.subtle.digest('SHA-256', new Uint8Array(data));
   return new Uint8Array(hash);
 }
 
