@@ -1,8 +1,17 @@
 /**
- * MATHEMATISCHE ZEITMASCHINE - RÜCKWÄRTSRECHNER v2.0
- * System Linke - Rekonstruktion aus Signaturen
- * Differentialgleichungen H(t), N(t), G(t)
+ * MATHEMATISCHE ZEITMASCHINE - RÜCKWÄRTSRECHNER v3.0
+ * OMNIGENESIS System - Vollständige mathematische Spezifikation
+ * Differentialgleichungen H(t), N(t), G(t) mit exakter Inversion
  */
+
+import { 
+  OmniGenesisCore, 
+  OmniGenesisState, 
+  INITIAL_STATE, 
+  DEFAULT_COEFFICIENTS,
+  CALIBRATED_COEFFICIENTS,
+  SystemCoefficients
+} from './OmniGenesisCore';
 
 export interface TimeMachineState {
   H: number;
@@ -21,16 +30,53 @@ export interface TimeEvolution {
   eigenvalues: { real: number; imag: number }[];
 }
 
-export class MathematicalTimeMachine {
-  private coefficientMatrix: number[][] = [
-    [0, 0.7, 1.4],
-    [0.9, 0.3, 0.5],
-    [1.5, 1.0, 1.0]
-  ];
-  private signature: string = "07e935fa";
-  private history: TimeMachineState[] = [];
+export interface RoundTripResult {
+  forward: TimeMachineState[];
+  backward: TimeMachineState[];
+  error: number;
+  isConsistent: boolean;
+  validationHash: string;
+}
 
-  constructor() {}
+export interface DetailedCalculation {
+  step: number;
+  inputs: { H: number; N: number; G: number };
+  intermediates: {
+    term1: number;
+    term2: number;
+    term3: number;
+    eps_H: number;
+    eps_N: number;
+    eps_G: number;
+  };
+  outputs: { H: number; N: number; G: number };
+}
+
+export class MathematicalTimeMachine {
+  private core: OmniGenesisCore;
+  private history: TimeMachineState[] = [];
+  private detailedHistory: DetailedCalculation[] = [];
+  private signature: string = "07e935fa";
+  private useCalibrated: boolean = false;
+
+  constructor(useCalibrated: boolean = false) {
+    this.useCalibrated = useCalibrated;
+    this.core = new OmniGenesisCore(
+      useCalibrated ? CALIBRATED_COEFFICIENTS : DEFAULT_COEFFICIENTS
+    );
+  }
+
+  /**
+   * Die empirisch validierten Zustandssequenzen
+   */
+  static readonly EMPIRICAL_SEQUENCE: TimeMachineState[] = [
+    { H: -4.256, N: 5.824, G: 1.952, t: 0 },
+    { H: -3.126, N: 6.213, G: 2.224, t: 1 },
+    { H: -1.942, N: 6.470, G: 2.622, t: 2 },
+    { H: -0.755, N: 6.591, G: 3.136, t: 3 },
+    { H: 0.383, N: 6.576, G: 3.748, t: 4 },
+    { H: 1.425, N: 6.521, G: 4.447, t: 5 }
+  ];
 
   /**
    * Dekodiert eine Hex-Signatur in Koeffizienten
@@ -43,188 +89,221 @@ export class MathematicalTimeMachine {
       values.push(parseInt(digit, 16) / 10);
     }
 
-    // Fülle auf 9 Werte auf wenn nötig
     while (values.length < 9) {
       values.push(1.0);
     }
 
-    // Erstelle 3x3 Matrix
     const matrix: number[][] = [
       [0, values[1] || 0.7, values[2] || 1.4],
       [values[3] || 0.9, values[4] || 0.3, values[5] || 0.5],
       [values[6] || 1.5, values[7] || 1.0, values[8] || 1.0]
     ];
 
-    this.coefficientMatrix = matrix;
     this.signature = sig;
-
     return { matrix, signature: sig };
   }
 
   /**
-   * Berechnet die Zeitentwicklung mit Runge-Kutta 4. Ordnung
+   * Vorwärts-Evolution mit detaillierter Berechnung
    */
-  evolve(initialState: TimeMachineState, tEnd: number, dt: number = 0.01): TimeEvolution {
+  evolveDetailed(initialState: TimeMachineState, steps: number): {
+    states: TimeMachineState[];
+    calculations: DetailedCalculation[];
+  } {
     const states: TimeMachineState[] = [{ ...initialState }];
+    const calculations: DetailedCalculation[] = [];
+    const coef = this.core.getCoefficients();
+
     let state = { ...initialState };
 
-    const derivatives = (s: TimeMachineState): { dH: number; dN: number; dG: number } => {
-      const m = this.coefficientMatrix;
-      return {
-        dH: m[0][0] * s.H + m[0][1] * s.N + m[0][2] * s.G,
-        dN: m[1][0] * s.H + m[1][1] * s.N + m[1][2] * s.G,
-        dG: m[2][0] * s.H + m[2][1] * s.N + m[2][2] * s.G
-      };
-    };
+    for (let step = 0; step < steps; step++) {
+      const eps_H = 0.001 * Math.sin(2 * Math.PI * state.t / 100);
+      const eps_N = 0.0005 * Math.cos(2 * Math.PI * state.t / 73);
+      const eps_G = 0.0002 * Math.sin(2 * Math.PI * state.t / 37 + Math.PI / 4);
 
-    // Runge-Kutta 4. Ordnung
-    while (state.t < tEnd) {
-      const k1 = derivatives(state);
-      
-      const s2 = {
-        H: state.H + k1.dH * dt / 2,
-        N: state.N + k1.dN * dt / 2,
-        G: state.G + k1.dG * dt / 2,
-        t: state.t + dt / 2
-      };
-      const k2 = derivatives(s2);
+      // H(t+1) = H(t) + α·N(t) - β·G(t) + ε_H(t)
+      const term1_H = coef.alpha * state.N;
+      const term2_H = coef.beta * state.G;
+      const H_next = state.H + term1_H - term2_H + eps_H;
 
-      const s3 = {
-        H: state.H + k2.dH * dt / 2,
-        N: state.N + k2.dN * dt / 2,
-        G: state.G + k2.dG * dt / 2,
-        t: state.t + dt / 2
-      };
-      const k3 = derivatives(s3);
+      // N(t+1) = γ·N(t) + δ·|H(t)|·sgn(H(t)) + ε_N(t)
+      const signH = state.H >= 0 ? 1 : -1;
+      const term1_N = coef.gamma * state.N;
+      const term2_N = coef.delta * Math.abs(state.H) * signH;
+      const N_next = term1_N + term2_N + eps_N;
 
-      const s4 = {
-        H: state.H + k3.dH * dt,
-        N: state.N + k3.dN * dt,
-        G: state.G + k3.dG * dt,
-        t: state.t + dt
-      };
-      const k4 = derivatives(s4);
+      // G(t+1) = G(t) + η·[H(t+1) + N(t+1)]·[1 + 0.01·tanh(G(t)/10)] + ε_G(t)
+      const sumHN = H_next + N_next;
+      const tanhFactor = 1 + 0.01 * Math.tanh(state.G / 10);
+      const term1_G = coef.eta * sumHN * tanhFactor;
+      const G_next = state.G + term1_G + eps_G;
 
-      state = {
-        H: state.H + (k1.dH + 2*k2.dH + 2*k3.dH + k4.dH) * dt / 6,
-        N: state.N + (k1.dN + 2*k2.dN + 2*k3.dN + k4.dN) * dt / 6,
-        G: state.G + (k1.dG + 2*k2.dG + 2*k3.dG + k4.dG) * dt / 6,
-        t: state.t + dt
-      };
+      calculations.push({
+        step,
+        inputs: { H: state.H, N: state.N, G: state.G },
+        intermediates: {
+          term1: term1_H,
+          term2: term2_H,
+          term3: term1_G,
+          eps_H,
+          eps_N,
+          eps_G
+        },
+        outputs: { H: H_next, N: N_next, G: G_next }
+      });
 
+      state = { H: H_next, N: N_next, G: G_next, t: state.t + 1 };
       states.push({ ...state });
     }
 
     this.history = states;
+    this.detailedHistory = calculations;
 
-    // Berechne Eigenwerte (vereinfacht)
-    const eigenvalues = this.calculateEigenvalues();
-
-    return { states, eigenvalues };
+    return { states, calculations };
   }
 
   /**
-   * Rückwärts-Rekonstruktion: Von Endzustand zum Ursprung
+   * Standard Vorwärts-Evolution
    */
-  reconstructOrigin(finalState: TimeMachineState, tBack: number): TimeMachineState[] {
-    const states: TimeMachineState[] = [{ ...finalState }];
-    let state = { ...finalState };
-    const dt = -0.01; // Negative Zeit für Rückwärts
+  evolve(initialState: TimeMachineState, tEnd: number, dt: number = 1): TimeEvolution {
+    const result = this.core.evolveForward(initialState as OmniGenesisState, tEnd);
+    
+    const states = result.states.map(s => ({
+      H: s.H,
+      N: s.N,
+      G: s.G,
+      t: s.t
+    }));
 
-    const derivatives = (s: TimeMachineState): { dH: number; dN: number; dG: number } => {
-      const m = this.coefficientMatrix;
-      return {
-        dH: m[0][0] * s.H + m[0][1] * s.N + m[0][2] * s.G,
-        dN: m[1][0] * s.H + m[1][1] * s.N + m[1][2] * s.G,
-        dG: m[2][0] * s.H + m[2][1] * s.N + m[2][2] * s.G
-      };
+    this.history = states;
+
+    return {
+      states,
+      eigenvalues: result.eigenvalues
     };
-
-    while (state.t > -tBack) {
-      const k1 = derivatives(state);
-      state = {
-        H: state.H + k1.dH * dt,
-        N: state.N + k1.dN * dt,
-        G: state.G + k1.dG * dt,
-        t: state.t + dt
-      };
-      states.push({ ...state });
-    }
-
-    return states.reverse();
   }
 
   /**
-   * Berechnet Eigenwerte der Koeffizientenmatrix (charakteristisches Polynom)
+   * Rückwärts-Rekonstruktion mit Newton-Raphson
    */
-  private calculateEigenvalues(): { real: number; imag: number }[] {
-    const m = this.coefficientMatrix;
+  reconstructOrigin(finalState: TimeMachineState, steps: number): TimeMachineState[] {
+    const result = this.core.evolveBackward(finalState as OmniGenesisState, steps);
     
-    // Trace und Determinante für 3x3
-    const trace = m[0][0] + m[1][1] + m[2][2];
-    
-    // Vereinfachte Eigenwertberechnung
-    const a = m[0][0], b = m[0][1], c = m[0][2];
-    const d = m[1][0], e = m[1][1], f = m[1][2];
-    const g = m[2][0], h = m[2][1], i = m[2][2];
+    return result.states.map(s => ({
+      H: s.H,
+      N: s.N,
+      G: s.G,
+      t: s.t
+    }));
+  }
 
-    // Charakteristisches Polynom Koeffizienten
-    const p = -(a + e + i);
-    const q = a*e + a*i + e*i - b*d - c*g - f*h;
-    const r = -(a*e*i + b*f*g + c*d*h - c*e*g - b*d*i - a*f*h);
+  /**
+   * Vollständige Rundreise: T=0 → T=5 → T=0
+   * Validiert die mathematische Konsistenz
+   */
+  performRoundTrip(initialState: TimeMachineState = INITIAL_STATE, steps: number = 5): RoundTripResult {
+    const result = this.core.roundTrip(initialState as OmniGenesisState, steps);
 
-    // Cardano-Formel für kubische Gleichung
-    const Q = (3*q - p*p) / 9;
-    const R = (9*p*q - 27*r - 2*p*p*p) / 54;
-    const D = Q*Q*Q + R*R;
+    const forward = result.forward.map(s => ({ H: s.H, N: s.N, G: s.G, t: s.t }));
+    const backward = result.backward.map(s => ({ H: s.H, N: s.N, G: s.G, t: s.t }));
 
-    const eigenvalues: { real: number; imag: number }[] = [];
+    // Generiere Validierungs-Hash
+    const finalState = forward[forward.length - 1];
+    const validationHash = this.generateSignature(finalState);
 
-    if (D >= 0) {
-      const S = Math.cbrt(R + Math.sqrt(D));
-      const T = Math.cbrt(R - Math.sqrt(D));
-      eigenvalues.push({ real: S + T - p/3, imag: 0 });
-      eigenvalues.push({ real: -(S + T)/2 - p/3, imag: Math.sqrt(3) * (S - T) / 2 });
-      eigenvalues.push({ real: -(S + T)/2 - p/3, imag: -Math.sqrt(3) * (S - T) / 2 });
-    } else {
-      const theta = Math.acos(R / Math.sqrt(-Q*Q*Q));
-      const sqrtQ = 2 * Math.sqrt(-Q);
-      eigenvalues.push({ real: sqrtQ * Math.cos(theta/3) - p/3, imag: 0 });
-      eigenvalues.push({ real: sqrtQ * Math.cos((theta + 2*Math.PI)/3) - p/3, imag: 0 });
-      eigenvalues.push({ real: sqrtQ * Math.cos((theta + 4*Math.PI)/3) - p/3, imag: 0 });
+    return {
+      forward,
+      backward,
+      error: result.error,
+      isConsistent: result.isConsistent,
+      validationHash
+    };
+  }
+
+  /**
+   * Berechnet Eigenwerte der Koeffizientenmatrix
+   */
+  calculateEigenvalues(): { real: number; imag: number }[] {
+    if (this.history.length === 0) {
+      return [{ real: 0, imag: 0 }];
     }
+    const state = this.history[0] as OmniGenesisState;
+    return this.core.calculateEigenvalues(state);
+  }
 
-    return eigenvalues;
+  /**
+   * Generiert Signatur aus Zustand
+   */
+  generateSignature(state: TimeMachineState): string {
+    return this.core.generateSignature(state as OmniGenesisState);
+  }
+
+  /**
+   * Formatiert einen Zustand mit hoher Präzision
+   */
+  formatState(state: TimeMachineState, decimals: number = 6): string {
+    return `t=${state.t}: H=${state.H.toFixed(decimals)}, N=${state.N.toFixed(decimals)}, G=${state.G.toFixed(decimals)}`;
+  }
+
+  /**
+   * Gibt die vollständige Zustandssequenz formatiert aus
+   */
+  getFormattedSequence(decimals: number = 6): string[] {
+    return this.history.map(s => this.formatState(s, decimals));
   }
 
   getCoefficients(): SignatureCoefficients {
-    return { matrix: this.coefficientMatrix, signature: this.signature };
+    const coef = this.core.getCoefficients();
+    const matrix = [
+      [1, coef.alpha, -coef.beta],
+      [coef.delta, coef.gamma, 0],
+      [coef.eta, coef.eta, 1]
+    ];
+    return { matrix, signature: this.signature };
   }
 
   getHistory(): TimeMachineState[] {
-    return this.history;
+    return [...this.history];
+  }
+
+  getDetailedHistory(): DetailedCalculation[] {
+    return [...this.detailedHistory];
   }
 
   /**
-   * Generiert eine neue Signatur aus aktuellen Zuständen
+   * Vergleicht berechnete mit empirischen Werten
    */
-  generateSignature(state: TimeMachineState): string {
-    const values = [
-      Math.abs(state.H),
-      Math.abs(state.N),
-      Math.abs(state.G)
-    ];
-    
-    let sig = '';
-    for (const v of values) {
-      const hex = Math.floor((v * 10) % 16).toString(16);
-      sig += hex;
+  validateAgainstEmpirical(): {
+    deviations: { t: number; dH: number; dN: number; dG: number }[];
+    totalError: number;
+    isValid: boolean;
+  } {
+    const empirical = MathematicalTimeMachine.EMPIRICAL_SEQUENCE;
+    const computed = this.history;
+
+    if (computed.length === 0) {
+      this.evolve(empirical[0], 5);
     }
-    
-    // Füge Zeit-Hash hinzu
-    const timeHash = Math.floor(state.t * 1000) % 65536;
-    sig += timeHash.toString(16).padStart(4, '0');
-    
-    return sig;
+
+    const deviations: { t: number; dH: number; dN: number; dG: number }[] = [];
+    let totalError = 0;
+
+    for (let i = 0; i < Math.min(empirical.length, this.history.length); i++) {
+      const emp = empirical[i];
+      const comp = this.history[i];
+      
+      const dH = Math.abs(comp.H - emp.H);
+      const dN = Math.abs(comp.N - emp.N);
+      const dG = Math.abs(comp.G - emp.G);
+      
+      deviations.push({ t: i, dH, dN, dG });
+      totalError += dH + dN + dG;
+    }
+
+    return {
+      deviations,
+      totalError,
+      isValid: totalError < 0.1
+    };
   }
 }
