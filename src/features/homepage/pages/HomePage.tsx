@@ -18,6 +18,11 @@ import LexUniversalisSection from '../components/LexUniversalisSection';
 import ParticipationSection from '../components/ParticipationSection';
 import CTASection from '../components/CTASection';
 import AIChatWindow from '@/features/chat/components/AIChatWindow';
+import OmniGenesisShowcase from '../components/OmniGenesisShowcase';
+import LiveMetricsSection from '../components/LiveMetricsSection';
+import TeamSection from '../components/TeamSection';
+import PartnersSection from '../components/PartnersSection';
+import TestimonialsSection from '../components/TestimonialsSection';
 
 const HomePage = () => {
   return (
@@ -28,14 +33,19 @@ const HomePage = () => {
       <ArchitectureLayersSection />
       <TechnologicalPillarsSection />
       <TechnologySection />
+      <OmniGenesisShowcase />
       <AutonomousAgentsSection />
       <DataSovereigntySection />
       <DecentralizedSection />
       <SecuritySection />
       <SustainabilitySection />
       <UseCasesSection />
+      <LiveMetricsSection />
       <DeveloperHubSection />
       <EcosystemSection />
+      <TeamSection />
+      <PartnersSection />
+      <TestimonialsSection />
       <RoadmapSection />
       <FAQSection />
       <LexUniversalisSection />
