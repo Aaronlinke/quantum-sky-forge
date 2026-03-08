@@ -22,12 +22,10 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     const fetchStats = async () => {
-      const [pods, agents, nodes, edges] = await Promise.all([
-        supabase.from('data_pods').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
-        supabase.from('user_agents').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('knowledge_nodes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('knowledge_edges').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-      ]);
+      const pods = await supabase.from('data_pods').select('id', { count: 'exact', head: true }).eq('owner_id', user.id);
+      const agents = await supabase.from('user_agents').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+      const nodes = await supabase.from('knowledge_nodes').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
+      const edges = await supabase.from('knowledge_edges').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
       setStats({
         dataPods: pods.count || 0,
         agents: agents.count || 0,
