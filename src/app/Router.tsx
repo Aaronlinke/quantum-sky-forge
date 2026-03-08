@@ -13,6 +13,9 @@ import AgentMarketplace from '@/pages/AgentMarketplace';
 import MyAgents from '@/pages/MyAgents';
 import KnowledgeGraph from '@/pages/KnowledgeGraph';
 import BlackSultanOS from '@/pages/BlackSultanOS';
+import OmniGenesisHub from '@/pages/OmniGenesisHub';
+import Dashboard from '@/pages/Dashboard';
+import OnboardingFlow from '@/features/onboarding/components/OnboardingFlow';
 import { AuthProvider } from '@/hooks/useAuth';
 
 const queryClient = new QueryClient();
@@ -30,6 +33,18 @@ const router = createBrowserRouter([
       {
         path: 'auth',
         element: <Auth />,
+      },
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
+      },
+      {
+        path: 'onboarding',
+        element: <OnboardingFlow />,
+      },
+      {
+        path: 'omni-genesis',
+        element: <OmniGenesisHub />,
       },
       {
         path: 'profile',

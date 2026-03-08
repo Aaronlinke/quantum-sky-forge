@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User, Network, Share2, Brain } from "lucide-react";
+import { Menu, X, User, Network, Share2, Brain, Atom, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -33,8 +33,16 @@ const Header = () => {
             <Brain className="w-4 h-4" />
             Neural Core
           </Link>
+          <Link to="/omni-genesis" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+            <Atom className="w-4 h-4" />
+            OMNI-GENESIS
+          </Link>
           {user && (
             <>
+              <Link to="/dashboard" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
               <Link to="/agent-marketplace" className="text-sm font-medium hover:text-primary transition-colors">
                 Agenten
               </Link>
@@ -109,8 +117,24 @@ const Header = () => {
               <Brain className="w-4 h-4" />
               Neural Core
             </Link>
+            <Link
+              to="/omni-genesis"
+              className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Atom className="w-4 h-4" />
+              OMNI-GENESIS
+            </Link>
             {user && (
               <>
+                <Link
+                  to="/dashboard"
+                  className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
                 <Link
                   to="/agent-marketplace"
                   className="text-sm font-medium hover:text-primary transition-colors"
