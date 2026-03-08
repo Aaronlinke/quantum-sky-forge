@@ -24,7 +24,7 @@ const Dashboard = () => {
     const fetchStats = async () => {
       const [pods, agents, nodes, edges] = await Promise.all([
         supabase.from('data_pods').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
-        supabase.from('installed_agents').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('user_agents').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('knowledge_nodes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('knowledge_edges').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ]);
