@@ -33,6 +33,10 @@ const Header = () => {
             <Brain className="w-4 h-4" />
             Neural Core
           </Link>
+          <Link to="/omni-genesis" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+            <Atom className="w-4 h-4" />
+            OMNI-GENESIS
+          </Link>
           {user && (
             <>
               <Link to="/agent-marketplace" className="text-sm font-medium hover:text-primary transition-colors">
