@@ -39,6 +39,10 @@ const Header = () => {
           </Link>
           {user && (
             <>
+              <Link to="/dashboard" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
               <Link to="/agent-marketplace" className="text-sm font-medium hover:text-primary transition-colors">
                 Agenten
               </Link>
