@@ -117,8 +117,24 @@ const Header = () => {
               <Brain className="w-4 h-4" />
               Neural Core
             </Link>
+            <Link
+              to="/omni-genesis"
+              className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Atom className="w-4 h-4" />
+              OMNI-GENESIS
+            </Link>
             {user && (
               <>
+                <Link
+                  to="/dashboard"
+                  className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
                 <Link
                   to="/agent-marketplace"
                   className="text-sm font-medium hover:text-primary transition-colors"
