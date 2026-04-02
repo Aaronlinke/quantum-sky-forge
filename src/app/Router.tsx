@@ -72,8 +72,13 @@ const router = createBrowserRouter([
         element: <KnowledgeGraph />,
       },
       {
+        path: 'nexus-math',
+        element: <NexusMathExplorer />,
+      },
+      {
         path: 'black-sultan-os',
         element: <BlackSultanOS />,
+      },
       },
     ],
   },
