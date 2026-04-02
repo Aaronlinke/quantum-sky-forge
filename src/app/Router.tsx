@@ -15,6 +15,7 @@ import KnowledgeGraph from '@/pages/KnowledgeGraph';
 import BlackSultanOS from '@/pages/BlackSultanOS';
 import OmniGenesisHub from '@/pages/OmniGenesisHub';
 import Dashboard from '@/pages/Dashboard';
+import NexusMathExplorer from '@/pages/NexusMathExplorer';
 import OnboardingFlow from '@/features/onboarding/components/OnboardingFlow';
 import { AuthProvider } from '@/hooks/useAuth';
 
