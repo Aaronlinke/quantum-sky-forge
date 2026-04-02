@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User, Network, Share2, Brain, Atom, LayoutDashboard } from "lucide-react";
+import { Menu, X, User, Network, Share2, Brain, Atom, LayoutDashboard, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -36,6 +36,10 @@ const Header = () => {
           <Link to="/omni-genesis" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
             <Atom className="w-4 h-4" />
             OMNI-GENESIS
+          </Link>
+          <Link to="/nexus-math" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+            <BookOpen className="w-4 h-4" />
+            Nexus Math
           </Link>
           {user && (
             <>
@@ -124,6 +128,14 @@ const Header = () => {
             >
               <Atom className="w-4 h-4" />
               OMNI-GENESIS
+            </Link>
+            <Link
+              to="/nexus-math"
+              className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <BookOpen className="w-4 h-4" />
+              Nexus Math
             </Link>
             {user && (
               <>
