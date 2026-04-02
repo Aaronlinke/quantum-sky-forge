@@ -79,7 +79,6 @@ const router = createBrowserRouter([
         path: 'black-sultan-os',
         element: <BlackSultanOS />,
       },
-      },
     ],
   },
 ]);
